@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Ad Copy Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <img src="https://www.comtogether.com/wp-content/uploads/2019/10/logo_com2_2020-1030x243.png.webp" alt="Company Logo" class="logo">
+            </div>
+            <h1>Social Ad Copy Generator</h1>
+            <p>Generate optimized ad copies for multiple social media platforms</p>
+        </header>
+
+        <main>
+            <form id="adForm">
+                <div class="form-group">
+                    <label for="companyName">Company Name</label>
+                    <input type="text" id="companyName" name="companyName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="landingUrl">Landing Page URL</label>
+                    <input type="url" id="landingUrl" name="landingUrl" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="productType">Product Type:</label>
+                    <input type="text" id="productType" name="productType" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="aiModel">AI Model:</label>
+                    <select id="aiModel" name="aiModel">
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                        <option value="gpt-4">GPT-4</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">Generate Ad Copies</button>
+            </form>
+
+            <div id="loading" class="hidden">
+                <div class="spinner"></div>
+                <p>Generating your ad copies...</p>
+            </div>
+
+            <div id="results" class="hidden">
+                <div class="platform-tabs">
+                    <button class="tab-btn active" data-platform="facebook">Facebook</button>
+                    <button class="tab-btn" data-platform="instagram">Instagram</button>
+                    <button class="tab-btn" data-platform="tiktok">TikTok</button>
+                    <button class="tab-btn" data-platform="linkedin">LinkedIn</button>
+                </div>
+
+                <div class="platform-content">
+                    <div id="facebook" class="platform-section active">
+                        <h2>Facebook Ads</h2>
+                        <div class="ad-copies"></div>
+                    </div>
+                    <div id="instagram" class="platform-section">
+                        <h2>Instagram Ads</h2>
+                        <div class="ad-copies"></div>
+                    </div>
+                    <div id="tiktok" class="platform-section">
+                        <h2>TikTok Ads</h2>
+                        <div class="ad-copies"></div>
+                    </div>
+                    <div id="linkedin" class="platform-section">
+                        <h2>LinkedIn Ads</h2>
+                        <div class="ad-copies"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 
