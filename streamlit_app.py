@@ -5,6 +5,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+import pyperclip  # Add this import for clipboard functionality
 
 # Load environment variables
 load_dotenv()
@@ -18,6 +19,16 @@ st.set_page_config(
     page_icon="📝",
     layout="wide"
 )
+
+# Initialize session state for copied items
+if 'copied_items' not in st.session_state:
+    st.session_state.copied_items = set()
+
+# Function to copy text to clipboard
+def copy_to_clipboard(text, key):
+    pyperclip.copy(text)
+    st.session_state.copied_items.add(key)
+    st.experimental_rerun()
 
 # Custom CSS
 st.markdown("""
@@ -254,16 +265,23 @@ if submit_button:
                             for ad_key, ad in ads.items():
                                 with st.container():
                                     st.markdown(f"### {ad_key.upper()}")
-                                    # Copy button with better UX
+                                    
+                                    # Create a unique key for this ad
+                                    copy_key = f"{platform}_{ad_key}"
                                     full_text = f"{ad['headline']}\n\n{ad['description']}\n\n{ad['cta']}"
-                                    col1, col2 = st.columns([3, 1])
-                                    with col1:
-                                        st.markdown(f"**Headline:** {ad['headline']}")
-                                        st.markdown(f"**Description:** {ad['description']}")
-                                        st.markdown(f"**Call to Action:** {ad['cta']}")
-                                    with col2:
-                                        if st.button("Copy", key=f"{platform}_{ad_key}"):
-                                            st.code(full_text)
-                                            st.success("Copied!")
+                                    
+                                    # Display ad content
+                                    st.markdown(f"**Headline:** {ad['headline']}")
+                                    st.markdown(f"**Description:** {ad['description']}")
+                                    st.markdown(f"**Call to Action:** {ad['cta']}")
+                                    
+                                    # Copy button with improved UX
+                                    if copy_key in st.session_state.copied_items:
+                                        st.success("Copied to clipboard!")
+                                    else:
+                                        if st.button("Copy to Clipboard", key=f"btn_{copy_key}"):
+                                            copy_to_clipboard(full_text, copy_key)
+                                    
+                                    st.divider()
                         except Exception as e:
                             st.error(f"Error displaying {platform} ads: {str(e)}") 
