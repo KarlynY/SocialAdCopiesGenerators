@@ -1,52 +1,45 @@
-# Social Ad Copies Generator
+# Social Ad Copy Generator
 
-A web application that generates optimized ad copies for different social media platforms using AI.
+A Streamlit app that generates optimized ad copies for multiple social media platforms using OpenAI's GPT models.
 
 ## Features
 
-- Generates ad copies for multiple social media platforms (Facebook, Instagram, TikTok, LinkedIn)
-- Uses OpenAI's GPT models for content generation
-- Platform-specific character limits and formatting
-- Easy-to-use web interface
+- Generate ad copies for Facebook, Instagram, TikTok, and LinkedIn
+- Support for multiple languages
+- Customizable AI model selection (GPT-3.5 Turbo or GPT-4)
+- Landing page content extraction
 - Copy-to-clipboard functionality
 
 ## Setup
 
-1. Clone the repository:
-```bash
-git clone <your-repository-url>
-cd social-ad-copies-generator
-```
-
-2. Create a virtual environment and activate it:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
+1. Clone this repository
+2. Create a `.env` file with your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_api_key_here
+   ```
 3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+   ```
+   pip install -r requirements.txt
+   ```
+4. Run the app locally:
+   ```
+   streamlit run streamlit_app.py
+   ```
 
-4. Set up environment variables:
-   - Copy `.env.example` to `.env`
-   - Add your OpenAI API key to the `.env` file
+## Deployment
 
-5. Run the application:
-```bash
-python app.py
-```
+This app is deployed on Streamlit Cloud. To deploy your own version:
 
-The application will be available at `http://localhost:5001`
+1. Fork this repository
+2. Go to [Streamlit Cloud](https://streamlit.io/cloud)
+3. Connect your GitHub account
+4. Select this repository
+5. Add your OpenAI API key in the Streamlit Cloud secrets management
+6. Deploy!
 
 ## Environment Variables
 
-Create a `.env` file in the root directory with the following variables:
-
-```
-OPENAI_API_KEY=your_api_key_here
-```
+- `OPENAI_API_KEY`: Your OpenAI API key (required)
 
 ## Usage
 
