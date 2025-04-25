@@ -5,7 +5,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-import pyperclip  # Add this import for clipboard functionality
+import pyperclip
 
 # Load environment variables
 load_dotenv()
@@ -24,13 +24,7 @@ st.set_page_config(
 if 'copied_items' not in st.session_state:
     st.session_state.copied_items = set()
 
-# Function to copy text to clipboard
-def copy_to_clipboard(text, key):
-    pyperclip.copy(text)
-    st.session_state.copied_items.add(key)
-    st.experimental_rerun()
-
-# Custom CSS
+# Custom CSS with improved styling
 st.markdown("""
 <style>
     .main {
@@ -82,13 +76,26 @@ st.markdown("""
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         border-color: #2374ff;
     }
+    .copy-success {
+        color: #2ecc71;
+        font-weight: bold;
+        margin-top: 5px;
+    }
+    .copy-button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin-top: 10px;
+    }
+    .copy-button:hover {
+        background-color: #2980b9;
+    }
 </style>
 """, unsafe_allow_html=True)
-
-# Header
-st.image("https://www.comtogether.com/wp-content/uploads/2019/10/logo_com2_2020-1030x243.png.webp", width=300)
-st.title("Social Ad Copy Generator")
-st.markdown("Generate optimized ad copies for multiple social media platforms")
 
 # Function to extract content from URL
 def extract_content_from_url(url):
@@ -177,6 +184,11 @@ def generate_ad_copy(company_name, product_type, landing_page_content, language=
             })
     
     return ad_copies
+
+# Header
+st.image("https://www.comtogether.com/wp-content/uploads/2019/10/logo_com2_2020-1030x243.png.webp", width=300)
+st.title("Social Ad Copy Generator")
+st.markdown("Generate optimized ad copies for multiple social media platforms")
 
 # Form
 with st.form("ad_form"):
@@ -275,12 +287,24 @@ if submit_button:
                                     st.markdown(f"**Description:** {ad['description']}")
                                     st.markdown(f"**Call to Action:** {ad['cta']}")
                                     
-                                    # Copy button with improved UX
-                                    if copy_key in st.session_state.copied_items:
-                                        st.success("Copied to clipboard!")
-                                    else:
-                                        if st.button("Copy to Clipboard", key=f"btn_{copy_key}"):
-                                            copy_to_clipboard(full_text, copy_key)
+                                    # Use a different approach for copy button
+                                    col1, col2 = st.columns([4, 1])
+                                    with col1:
+                                        # Display the full text in a code block that can be selected
+                                        st.code(full_text, language=None)
+                                    with col2:
+                                        # Use a simple button that doesn't cause a full rerun
+                                        if st.button("Copy", key=f"btn_{copy_key}"):
+                                            # Use JavaScript to copy to clipboard
+                                            st.markdown(
+                                                f"""
+                                                <script>
+                                                    navigator.clipboard.writeText(`{full_text.replace('`', '\\`').replace("'", "\\'")}`);
+                                                </script>
+                                                """,
+                                                unsafe_allow_html=True
+                                            )
+                                            st.success("Copied!")
                                     
                                     st.divider()
                         except Exception as e:
