@@ -5,10 +5,22 @@ document.getElementById('adForm').addEventListener('submit', async function(e) {
     document.getElementById('loading').classList.remove('hidden');
     document.getElementById('results').innerHTML = '';
     
+    // Start countdown
+    let timeLeft = 30;
+    const timerElement = document.getElementById('timer');
+    const countdownInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = timeLeft;
+        if (timeLeft <= 0) {
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
+    
     const formData = {
         companyName: document.getElementById('companyName').value,
         landingUrl: document.getElementById('landingUrl').value,
         productType: document.getElementById('productType').value,
+        language: document.getElementById('language').value,
         aiModel: document.getElementById('aiModel').value
     };
 
@@ -34,8 +46,10 @@ document.getElementById('adForm').addEventListener('submit', async function(e) {
         console.error('Error:', error);
         alert('An error occurred while generating ad copies. Please try again.');
     } finally {
-        // Hide loading state
+        // Hide loading state and clear countdown
+        clearInterval(countdownInterval);
         document.getElementById('loading').classList.add('hidden');
+        document.getElementById('timer').textContent = '30';
     }
 });
 

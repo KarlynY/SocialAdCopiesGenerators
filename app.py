@@ -42,7 +42,7 @@ def extract_content_from_url(url):
     except Exception as e:
         return str(e)
 
-def generate_ad_copy(company_name, product_type, landing_page_content, ai_model="gpt-3.5-turbo"):
+def generate_ad_copy(company_name, product_type, landing_page_content, language="en", ai_model="gpt-3.5-turbo"):
     if not openai.api_key:
         return {"error": "OpenAI API key not configured. Please check your .env file."}
     
@@ -53,11 +53,30 @@ def generate_ad_copy(company_name, product_type, landing_page_content, ai_model=
         'linkedin': {'headline_limit': 150, 'description_limit': 600}
     }
     
+    # Language mapping for better prompts
+    language_names = {
+        'en': 'English',
+        'es': 'Spanish',
+        'fr': 'French',
+        'de': 'German',
+        'de-ch': 'Swiss German',
+        'it': 'Italian',
+        'pt': 'Portuguese',
+        'nl': 'Dutch',
+        'pl': 'Polish',
+        'ru': 'Russian',
+        'ja': 'Japanese',
+        'ko': 'Korean',
+        'zh-cn': 'Simplified Chinese',
+        'zh-tw': 'Traditional Chinese'
+    }
+    
     ad_copies = {}
     
     for platform, limits in platforms.items():
         try:
             prompt = f"""Create 3 different ad copies for {platform} for {company_name}, a {product_type} company.
+            The ad copies should be in {language_names.get(language, 'English')}.
             Use this landing page content as reference: {landing_page_content}
             
             For each ad copy, provide:
@@ -75,7 +94,7 @@ def generate_ad_copy(company_name, product_type, landing_page_content, ai_model=
             response = openai.ChatCompletion.create(
                 model=ai_model,
                 messages=[
-                    {"role": "system", "content": "You are a professional social media advertising copywriter. Always respond with valid JSON."},
+                    {"role": "system", "content": f"You are a professional social media advertising copywriter. Always respond with valid JSON. Generate content in {language_names.get(language, 'English')}."},
                     {"role": "user", "content": prompt}
                 ]
             )
@@ -110,6 +129,7 @@ def generate_ads():
         company_name = data.get('companyName')
         landing_url = data.get('landingUrl')
         product_type = data.get('productType')
+        language = data.get('language', 'en')  # Default to English if not specified
         ai_model = data.get('aiModel', 'gpt-3.5-turbo')  # Default to GPT-3.5 if not specified
         
         if not all([company_name, landing_url, product_type]):
@@ -120,8 +140,8 @@ def generate_ads():
         # Extract content from landing page
         landing_page_content = extract_content_from_url(landing_url)
         
-        # Generate ad copies
-        ad_copies = generate_ad_copy(company_name, product_type, landing_page_content, ai_model)
+        # Generate ad copies with language parameter
+        ad_copies = generate_ad_copy(company_name, product_type, landing_page_content, language, ai_model)
         
         # Check if there was an error with the API key
         if "error" in ad_copies:
