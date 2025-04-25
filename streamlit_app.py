@@ -254,14 +254,16 @@ if submit_button:
                             for ad_key, ad in ads.items():
                                 with st.container():
                                     st.markdown(f"### {ad_key.upper()}")
-                                    st.markdown(f"**Headline:** {ad['headline']}")
-                                    st.markdown(f"**Description:** {ad['description']}")
-                                    st.markdown(f"**Call to Action:** {ad['cta']}")
-                                    
-                                    # Copy button
+                                    # Copy button with better UX
                                     full_text = f"{ad['headline']}\n\n{ad['description']}\n\n{ad['cta']}"
-                                    if st.button(f"Copy {ad_key}", key=f"{platform}_{ad_key}"):
-                                        st.code(full_text)
-                                        st.success("Copied to clipboard!")
+                                    col1, col2 = st.columns([3, 1])
+                                    with col1:
+                                        st.markdown(f"**Headline:** {ad['headline']}")
+                                        st.markdown(f"**Description:** {ad['description']}")
+                                        st.markdown(f"**Call to Action:** {ad['cta']}")
+                                    with col2:
+                                        if st.button("Copy", key=f"{platform}_{ad_key}"):
+                                            st.code(full_text)
+                                            st.success("Copied!")
                         except Exception as e:
                             st.error(f"Error displaying {platform} ads: {str(e)}") 
