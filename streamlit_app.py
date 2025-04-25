@@ -287,24 +287,9 @@ if submit_button:
                                     st.markdown(f"**Description:** {ad['description']}")
                                     st.markdown(f"**Call to Action:** {ad['cta']}")
                                     
-                                    # Use a different approach for copy button
-                                    col1, col2 = st.columns([4, 1])
-                                    with col1:
-                                        # Display the full text in a code block that can be selected
-                                        st.code(full_text, language=None)
-                                    with col2:
-                                        # Use a simple button that doesn't cause a full rerun
-                                        if st.button("Copy", key=f"btn_{copy_key}"):
-                                            # Use JavaScript to copy to clipboard
-                                            st.markdown(
-                                                f"""
-                                                <script>
-                                                    navigator.clipboard.writeText(`{full_text.replace('`', '\\`').replace("'", "\\'")}`);
-                                                </script>
-                                                """,
-                                                unsafe_allow_html=True
-                                            )
-                                            st.success("Copied!")
+                                    # Display the full text in a code block that can be selected and copied
+                                    st.markdown("**Copy this text:**")
+                                    st.code(full_text, language=None)
                                     
                                     st.divider()
                         except Exception as e:
