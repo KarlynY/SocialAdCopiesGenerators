@@ -157,31 +157,62 @@ def generate_ad_copy(company_name, product_type, landing_page_content, language=
                 "ad1": {{"headline": "", "description": "", "cta": ""}},
                 "ad2": {{"headline": "", "description": "", "cta": ""}},
                 "ad3": {{"headline": "", "description": "", "cta": ""}}
-            }}"""
+            }}
+            
+            IMPORTANT: Your response must be valid JSON. Do not include any text before or after the JSON object."""
             
             response = openai.ChatCompletion.create(
                 model=ai_model,
                 messages=[
-                    {"role": "system", "content": f"You are a professional social media advertising copywriter. Always respond with valid JSON. Generate content in {language_names.get(language, 'English')}."},
+                    {"role": "system", "content": f"You are a professional social media advertising copywriter. Always respond with valid JSON only. Do not include any explanatory text. Generate content in {language_names.get(language, 'English')}."},
                     {"role": "user", "content": prompt}
-                ]
+                ],
+                temperature=0.7,
+                max_tokens=1000
             )
             
-            # Try to parse the response as JSON to ensure it's valid
+            # Get the response content
             content = response.choices[0].message.content.strip()
-            json.loads(content)  # Validate JSON
-            ad_copies[platform] = content
             
-        except json.JSONDecodeError as e:
-            ad_copies[platform] = json.dumps({
-                "error": f"Invalid JSON response for {platform}",
-                "details": str(e)
-            })
+            # Try to parse the response as JSON
+            try:
+                # Validate JSON
+                json_data = json.loads(content)
+                
+                # Check if it has the expected structure
+                if not isinstance(json_data, dict):
+                    raise ValueError(f"Expected dictionary, got {type(json_data)}")
+                
+                # Check if it has at least one ad
+                if not any(key.startswith('ad') for key in json_data.keys()):
+                    raise ValueError("No ad keys found in response")
+                
+                # Store the valid JSON
+                ad_copies[platform] = content
+            except json.JSONDecodeError as e:
+                # Create a fallback JSON with error information
+                error_json = {
+                    "error": f"Invalid JSON response for {platform}",
+                    "details": str(e),
+                    "raw_content": content[:200] + "..." if len(content) > 200 else content
+                }
+                ad_copies[platform] = json.dumps(error_json)
+            except ValueError as e:
+                # Create a fallback JSON with error information
+                error_json = {
+                    "error": f"Invalid JSON structure for {platform}",
+                    "details": str(e),
+                    "raw_content": content[:200] + "..." if len(content) > 200 else content
+                }
+                ad_copies[platform] = json.dumps(error_json)
+            
         except Exception as e:
-            ad_copies[platform] = json.dumps({
+            # Create a fallback JSON with error information
+            error_json = {
                 "error": f"Error generating ad copy for {platform}",
                 "details": str(e)
-            })
+            }
+            ad_copies[platform] = json.dumps(error_json)
     
     return ad_copies
 
@@ -272,21 +303,28 @@ if submit_button:
                 for i, (platform, content) in enumerate(ad_copies.items()):
                     with tabs[i]:
                         try:
-                            # Debug the content
-                            st.write("Raw content:", content[:100] + "..." if len(content) > 100 else content)
-                            
                             # Parse JSON with error handling
                             try:
                                 ads = json.loads(content)
-                            except json.JSONDecodeError as json_err:
-                                st.error(f"JSON parsing error for {platform}: {str(json_err)}")
-                                st.write("Invalid JSON content:", content)
+                            except json.JSONDecodeError:
+                                # Check if it's an error JSON
+                                try:
+                                    error_data = json.loads(content)
+                                    if "error" in error_data:
+                                        st.error(f"Error generating {platform} ads: {error_data.get('error', 'Unknown error')}")
+                                        continue
+                                except:
+                                    st.error(f"Unable to generate {platform} ads. Please try again.")
                                 continue
                             
                             # Check if ads is a dictionary
                             if not isinstance(ads, dict):
-                                st.error(f"Expected dictionary for {platform} ads, got {type(ads)}")
-                                st.write("Content:", ads)
+                                st.error(f"Unable to generate {platform} ads. Please try again.")
+                                continue
+                            
+                            # Check if it's an error response
+                            if "error" in ads:
+                                st.error(f"Error generating {platform} ads: {ads.get('error', 'Unknown error')}")
                                 continue
                             
                             # Process each ad
@@ -295,21 +333,13 @@ if submit_button:
                                     with st.container():
                                         st.markdown(f"### {ad_key.upper()}")
                                         
-                                        # Create a unique key for this ad
-                                        copy_key = f"{platform}_{ad_key}"
-                                        
                                         # Check if ad is a dictionary
                                         if not isinstance(ad, dict):
-                                            st.error(f"Expected dictionary for ad {ad_key}, got {type(ad)}")
-                                            st.write("Ad content:", ad)
                                             continue
                                         
                                         # Check if required keys exist
                                         required_keys = ['headline', 'description', 'cta']
-                                        missing_keys = [key for key in required_keys if key not in ad]
-                                        if missing_keys:
-                                            st.error(f"Missing required keys for ad {ad_key}: {missing_keys}")
-                                            st.write("Ad content:", ad)
+                                        if not all(key in ad for key in required_keys):
                                             continue
                                         
                                         # Create full text
@@ -325,9 +355,8 @@ if submit_button:
                                         st.code(full_text, language=None)
                                         
                                         st.divider()
-                                except Exception as ad_err:
-                                    st.error(f"Error processing ad {ad_key} for {platform}: {str(ad_err)}")
-                                    st.write("Ad content:", ad)
-                        except Exception as e:
-                            st.error(f"Error displaying {platform} ads: {str(e)}")
-                            st.write("Platform content:", content) 
+                                except Exception:
+                                    # Silently skip errors for individual ads
+                                    continue
+                        except Exception:
+                            st.error(f"Unable to display {platform} ads. Please try again.") 
